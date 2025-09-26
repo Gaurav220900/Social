@@ -16,7 +16,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-      "https://social-js6s.vercel.app/",
+      "https://social-js6s.vercel.app",
       "http://localhost:3000",
       "http://127.0.0.1:3000",
     ],
@@ -28,7 +28,7 @@ const io = new Server(server, {
 app.use(
   cors({
     origin: [
-      "https://social-js6s.vercel.app/",
+      "https://social-js6s.vercel.app",
       "http://localhost:3000",
       "http://127.0.0.1:3000",
     ],
