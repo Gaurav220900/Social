@@ -1,0 +1,17 @@
+/* Feed container */
+.feed {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  background: #fff;
+}
+
+/* Post card */
+.card {
+  border: 1px solid #dbdbdb;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 700px; /* Desktop-friendly width */
+}
