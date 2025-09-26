@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest --detectOpenHandles --forceExit",
     "start": "npm run dev",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
