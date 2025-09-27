@@ -7,7 +7,7 @@ const path = require("path");
 const cors = require("cors");
 const Message = require("./models/Message");
 
-dotenv.config();
+dotenv.config({ path: ".env.local" });
 connectDB();
 
 const app = express();
