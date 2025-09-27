@@ -25,7 +25,7 @@ const Register = () => {
         localStorage.setItem("token", res.data.token);
       }
       dispatch(loginSuccess(res.data.user));
-      navigate("/"); // go to home
+      navigate("/login"); // go to login
     } catch (err) {
       console.error("Registration error:", err);
       setError("Registration failed");

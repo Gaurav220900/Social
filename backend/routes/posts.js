@@ -5,6 +5,7 @@ const multer = require("multer");
 const authenticateToken = require("../middleware/auth");
 const Notification = require("../models/Notification");
 const mongoose = require("mongoose");
+const cloudinary = require("../config/cloudinary");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -21,15 +22,19 @@ router.post("/", upload.array("images", 5), async (req, res) => {
   try {
     const { content, author } = req.body;
 
-    console.log(req.files);
+    // Upload images to Cloudinary
+    const uploadPromises = req.files.map((file) =>
+      cloudinary.uploader.upload(file.path, { folder: "posts" })
+    );
 
-    // build image paths from uploaded files
-    const imagePaths = req.files.map((file) => `uploads/${file.filename}`);
+    const uploadedResults = await Promise.all(uploadPromises);
+    const imageUrls = uploadedResults.map((result) => result.secure_url);
 
+    // Save post with Cloudinary image URLs
     const newPost = new Post({
       author,
       content,
-      images: imagePaths,
+      images: imageUrls,
     });
 
     await newPost.save();
@@ -38,15 +43,9 @@ router.post("/", upload.array("images", 5), async (req, res) => {
       "username profilePicture"
     );
 
-    req.io.emit("new-post", populatedPost);
-
-    res.status(201).json({
-      ...populatedPost.toObject(),
-      images: imagePaths, // ensure images are sent back
-    });
+    res.status(201).json({ post: populatedPost });
   } catch (err) {
-    console.log(err);
-
+    console.error(err);
     res.status(400).json({ error: "Failed to create post" });
   }
 });
@@ -70,15 +69,8 @@ router.get("/", async (req, res) => {
 
     const total = await Post.countDocuments();
 
-    const updatedPosts = posts.map((post) => ({
-      ...post.toObject(),
-      images: post.images.map(
-        (img) => `${req.protocol}://${req.get("host")}/${img}`
-      ),
-    }));
-
     res.json({
-      posts: updatedPosts,
+      posts: posts,
       currentPage: page,
       totalPages: Math.ceil(total / limit),
     });
@@ -140,7 +132,7 @@ router.put("/:id/like", authenticateToken, async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate("author", "username email")
+      .populate("author", "username email profilePicture")
       .populate({
         path: "comments",
         populate: { path: "author", select: "username profilePicture" },
@@ -150,17 +142,16 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Post not found" });
     }
 
+    // Convert Mongoose document to plain object and ensure images are full URLs
     const updatedPost = {
       ...post.toObject(),
       comments: post.comments || [],
-      images: post.images.map(
-        (img) => `${req.protocol}://${req.get("host")}/${img}`
-      ),
+      images: post.images, // already full Cloudinary URLs
     };
 
     res.json(updatedPost);
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching post:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -12,6 +12,7 @@ const upload = multer({ dest: "uploads/" });
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const Notification = require("../models/Notification");
+const cloudinary = require("../config/cloudinary");
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -262,26 +263,37 @@ router.get("/:id", async (req, res) => {
 
 // Update user
 router.put("/:id", upload.single("profilePicture"), async (req, res) => {
-  const { username, email, bio } = req.body;
-  const profilePicUrl = req.file
-    ? `http://127.0.0.1:5000/uploads/${req.file.filename}`
-    : undefined;
+  try {
+    const { username, email, bio } = req.body;
 
-  // Update user in DB
-  const updatedUser = await User.findByIdAndUpdate(
-    req.params.id,
-    {
-      username,
-      email,
-      bio,
-      ...(profilePicUrl && { profilePicture: profilePicUrl }),
-    },
-    { new: true }
-  );
+    let profilePicUrl;
 
-  res.json(updatedUser);
+    if (req.file) {
+      // Upload the file to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "profile_pictures",
+      });
+      profilePicUrl = result.secure_url;
+    }
+
+    // Update user in DB
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        username,
+        email,
+        bio,
+        ...(profilePicUrl && { profilePicture: profilePicUrl }),
+      },
+      { new: true }
+    );
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error("Error updating profile:", err);
+    res.status(500).json({ error: "Failed to update profile" });
+  }
 });
-
 // Delete user
 router.delete("/:id", (req, res) => {
   const index = User.findIndex((u) => u.id === parseInt(req.params.id));

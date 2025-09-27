@@ -14,7 +14,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(new Error(error.message || error))
 );
 
 api.interceptors.response.use(
@@ -24,7 +24,7 @@ api.interceptors.response.use(
       localStorage.removeItem("token");
       window.location.href = "/login"; // redirect to login
     }
-    return Promise.reject(error);
+    return Promise.reject(new Error(error.message || error));
   }
 );
 
