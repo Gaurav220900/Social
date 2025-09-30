@@ -1,9 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import socket from "../../config/socket";
 import { useParams, Link } from "react-router-dom";
 import api from "../../config/api";
 import styles from "./ChatPage.module.css";
+import BackButton from "../../components/BackButton/BackButton";
+import {
+  fetchUnreadCount,
+  setCurrentChatUser,
+} from "../../redux/slices/messageSlice";
 
 function ChatPage() {
   const user = useSelector((state) => state.auth.user);
@@ -13,6 +18,7 @@ function ChatPage() {
   const [receiverDetails, setReceiverDetails] = useState(null);
   const containerRef = useRef(null);
   const bottomRef = useRef(null);
+  const dispatch = useDispatch();
 
   const scrollToBottom = () => {
     const container = containerRef.current;
@@ -48,6 +54,20 @@ function ChatPage() {
       fetchUserDetails();
     }
   }, [receiverId]);
+
+  //mark msg seen
+  useEffect(() => {
+    const markSeen = async () => {
+      if (receiverId) {
+        dispatch(setCurrentChatUser(receiverId));
+
+        await api.post("/messages/mark-seen", { senderId: receiverId });
+        dispatch(fetchUnreadCount());
+      }
+    };
+
+    markSeen();
+  }, [receiverId, dispatch]);
 
   // Fetch chat history
   useEffect(() => {
@@ -104,6 +124,7 @@ function ChatPage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
+      <BackButton />
       <h2>Chat</h2>
       <div
         ref={containerRef}

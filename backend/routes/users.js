@@ -16,15 +16,17 @@ const cloudinary = require("../config/cloudinary");
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_CALL_BACK_URL = process.env.GOOGLE_CALL_BACK_URL;
+console.log(GOOGLE_CALL_BACK_URL);
 
 router.use(passport.initialize());
 
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "https://social-js6s.vercel.app/api/auth/google/callback",
+      clientID: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
+      callbackURL: GOOGLE_CALL_BACK_URL,
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

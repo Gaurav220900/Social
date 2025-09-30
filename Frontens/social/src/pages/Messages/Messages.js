@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../../config/api";
 import { useSelector } from "react-redux";
 import ConvoList from "../../components/ConvoList/ConvoList";
+import BackButton from "../../components/BackButton/BackButton";
 
 function MessagesPage() {
   const user = useSelector((state) => state.auth.user);
@@ -36,6 +37,7 @@ function MessagesPage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
+      <BackButton />
       <h2>Messages</h2>
 
       {/* Search */}

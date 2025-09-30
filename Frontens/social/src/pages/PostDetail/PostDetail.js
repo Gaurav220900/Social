@@ -10,6 +10,7 @@ import {
   fetchPostById,
   deletePost,
 } from "../../redux/slices/postsSlice";
+import BackButton from "../../components/BackButton/BackButton";
 
 function PostDetailPage() {
   const { id } = useParams();
@@ -77,6 +78,8 @@ function PostDetailPage() {
 
   return (
     <div className={styles.container}>
+      <BackButton />
+
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.userInfo}>

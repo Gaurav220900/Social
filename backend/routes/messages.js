@@ -51,6 +51,7 @@ router.post("/", authenticateToken, async (req, res) => {
       sender: senderId,
       receiver: receiverId,
       conversationId: conversation._id,
+      read: false,
       content,
     });
 
@@ -59,6 +60,13 @@ router.post("/", authenticateToken, async (req, res) => {
     req.io.to(receiverId).emit("receiveMessage", newMessage);
     req.io.to(senderId).emit("receiveMessage", newMessage);
 
+    const unreadCount = await Message.countDocuments({
+      receiver: receiverId,
+      read: false,
+    });
+
+    req.io.to(receiverId).emit("unreadCount", { count: unreadCount });
+
     res.json(newMessage);
   } catch (err) {
     console.error("Error creating message:", err);
@@ -66,21 +74,37 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-router.get("/messages/unread-count", authenticateToken, async (req, res) => {
+router.get("/unread-count", authenticateToken, async (req, res) => {
   try {
-    const count = await Message.countDocuments({
-      recipient: req.user._id,
+    const unreadMessages = await Message.find({
+      receiver: req.user._id,
       read: false,
     });
 
-    const socketId = onlineUsers.get(req.user._id);
-    if (socketId) {
-      io.to(socketId).emit("unreadCount", { count });
-    }
+    const uniqueSenders = [
+      ...new Set(unreadMessages.map((msg) => msg.sender.toString())),
+    ];
 
-    res.json({ unreadCount: count });
+    res.json({ unreadCount: uniqueSenders.length });
   } catch (err) {
     console.error("Error fetching unread message count:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+router.post("/mark-seen", authenticateToken, async (req, res) => {
+  try {
+    const { senderId } = req.body;
+
+    // Mark all messages from this sender to current user as read
+    await Message.updateMany(
+      { sender: senderId, receiver: req.user._id, read: false },
+      { $set: { read: true } }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error marking messages as seen:", err);
     res.status(500).json({ error: "Server error" });
   }
 });

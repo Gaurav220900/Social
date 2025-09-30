@@ -43,6 +43,8 @@ router.post("/", upload.array("images", 5), async (req, res) => {
       "username profilePicture"
     );
 
+    req.io.emit("new-post", populatedPost);
+
     res.status(201).json({ post: populatedPost });
   } catch (err) {
     console.error(err);

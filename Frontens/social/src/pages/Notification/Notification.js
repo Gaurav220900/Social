@@ -5,6 +5,7 @@ import {
   markNotificationRead,
 } from "../../redux/slices/notificationSlice";
 import { Link } from "react-router-dom";
+import BackButton from "../../components/BackButton/BackButton";
 
 function NotificationsPage() {
   const dispatch = useDispatch();
@@ -20,6 +21,7 @@ function NotificationsPage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
+      <BackButton />
       <h2>Notifications</h2>
       {notifications?.length === 0 ? (
         <p>No notifications yet.</p>

@@ -31,6 +31,11 @@ const authSlice = createSlice({
       state.user = null;
       localStorage.removeItem("user");
     },
+    loginFailure: (state, action) => {
+      state.user = null;
+      state.token = null;
+      state.error = action.payload;
+    },
     followUser: (state, action) => {
       const id = action.payload.toString();
       if (!state.user) return;
@@ -101,6 +106,7 @@ const authSlice = createSlice({
 export const {
   loginSuccess,
   logout,
+  loginFailure,
   followUser,
   unfollowUser,
   blockUser,

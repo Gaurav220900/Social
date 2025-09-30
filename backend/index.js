@@ -7,7 +7,18 @@ const path = require("path");
 const cors = require("cors");
 const Message = require("./models/Message");
 
-dotenv.config({ path: ".env.local" });
+let envFile;
+
+if (process.env.NODE_ENV === "production") {
+  envFile = ".env.production";
+  dotenv.config({ path: envFile });
+} else {
+  envFile = ".env.development";
+  dotenv.config({ path: ".env.development" });
+  dotenv.config({ path: ".env.local", override: true });
+}
+
+console.log(`🚀 Running in ${process.env.NODE_ENV} mode`);
 connectDB();
 
 const app = express();
@@ -50,10 +61,6 @@ app.use("/api/messages", require("./routes/messages"));
 app.use("/api/conversations", require("./routes/conversations"));
 app.use("/api/notifications", require("./routes/notifications"));
 
-app.get("/", (req, res) => {
-  res.send("Hello, world!");
-});
-
 // --- Socket.IO ---
 const onlineUsers = new Map(); // userId -> socket.id
 
@@ -79,8 +86,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("❌ User disconnected:", socket.id);
-
     // remove user from online list
     for (const [userId, sId] of onlineUsers.entries()) {
       if (sId === socket.id) {
@@ -88,7 +93,6 @@ io.on("connection", (socket) => {
         break;
       }
     }
-    console.log("👥 Remaining online users:", [...onlineUsers.keys()]);
   });
 });
 

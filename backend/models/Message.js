@@ -17,6 +17,10 @@ const messageSchema = new mongoose.Schema(
       ref: "Conversation",
     },
     content: { type: String, required: true },
+    read: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

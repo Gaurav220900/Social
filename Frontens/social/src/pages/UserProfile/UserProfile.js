@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchPostsByUser } from "../../redux/slices/postsSlice";
 import FollowButton from "../../components/FollowButton/FollowButton";
 import BlockButton from "../../components/BlockButton/BlockButton";
+import BackButton from "../../components/BackButton/BackButton";
 
 function ProfilePage() {
   const { id } = useParams(); // userId from URL
@@ -94,6 +95,7 @@ function ProfilePage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
+      <BackButton />
       {/* User Info */}
       <div
         style={{

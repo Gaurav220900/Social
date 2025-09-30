@@ -23,9 +23,10 @@ const Register = () => {
       const res = await api.post("/auth/register", formData);
       if (res.data.token) {
         localStorage.setItem("token", res.data.token);
+        dispatch(loginSuccess(res.data.user));
+        navigate("/login");
       }
-      dispatch(loginSuccess(res.data.user));
-      navigate("/login"); // go to login
+      // go to login
     } catch (err) {
       console.error("Registration error:", err);
       setError("Registration failed");

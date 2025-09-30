@@ -14,6 +14,7 @@ const messageSlice = createSlice({
   name: "messages",
   initialState: {
     unreadCount: 0,
+    currentChatUserId: null,
   },
   reducers: {
     incrementUnread: (state) => {
@@ -21,6 +22,12 @@ const messageSlice = createSlice({
     },
     clearUnread: (state) => {
       state.unreadCount = 0;
+    },
+    setCurrentChatUser: (state, action) => {
+      state.currentChatUserId = action.payload; // save open chat
+    },
+    setUnreadCount: (state, action) => {
+      state.unreadCount = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -30,5 +37,6 @@ const messageSlice = createSlice({
   },
 });
 
-export const { incrementUnread, clearUnread } = messageSlice.actions;
+export const { incrementUnread, clearUnread, setCurrentChatUser } =
+  messageSlice.actions;
 export default messageSlice.reducer;

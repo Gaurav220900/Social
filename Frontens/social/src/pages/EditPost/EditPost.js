@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { updatePost } from "../../redux/slices/postsSlice";
+import BackButton from "../../components/BackButton/BackButton";
 
 function EditPostPage() {
   const { id } = useParams();
@@ -32,6 +33,7 @@ function EditPostPage() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "2rem auto" }}>
+      <BackButton />
       <h2>Edit Post</h2>
 
       {/* Show associated images (read-only) */}

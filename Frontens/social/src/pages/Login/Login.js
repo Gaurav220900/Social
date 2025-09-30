@@ -7,28 +7,47 @@ import api from "../../config/api";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Email/password login
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("prevent default hit", e);
+
+    // Clear any previous errors
+    setError("");
+    setIsLoading(true);
+
+    // Basic validation
+    if (!formData.email || !formData.password) {
+      setError("Email and password are required");
+      setIsLoading(false);
+      return; // Prevent further execution
+    }
+
     try {
       const res = await api.post("/auth/login", formData);
-      if (res.data.token) {
+
+      if (res?.data?.token) {
         localStorage.setItem("token", res.data.token);
+        dispatch(loginSuccess(res.data.user));
+        navigate("/");
+      } else {
+        setError("Login failed. Please try again.");
       }
-      dispatch(loginSuccess(res.data.user));
-      navigate("/");
     } catch (err) {
       console.error("Login error:", err);
       setError("Invalid credentials");
     }
   };
 
-  // Google OAuth login
   const handleGoogleLogin = () => {
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+    const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
     window.location.href = `${apiUrl}/api/auth/google`;
   };
 
@@ -36,10 +55,28 @@ const Login = () => {
     <div className="auth-wrapper">
       <div className="auth-container">
         <h2>Login</h2>
-        {error && <p className="error">{error}</p>}
+
+        {/* Display error message */}
+        {error && (
+          <div
+            className="error-container"
+            style={{
+              backgroundColor: "#fee",
+              border: "1px solid #fcc",
+              padding: "10px",
+              borderRadius: "4px",
+              marginBottom: "15px",
+              color: "#c66",
+            }}
+          >
+            <p className="error" style={{ margin: 0 }}>
+              {error}
+            </p>
+          </div>
+        )}
 
         {/* Email/Password Login */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <input
             type="email"
             placeholder="Email"
@@ -47,6 +84,8 @@ const Login = () => {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
+            disabled={isLoading}
+            required
           />
           <input
             type="password"
@@ -55,8 +94,19 @@ const Login = () => {
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
+            disabled={isLoading}
+            required
           />
-          <button type="submit">Login</button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              opacity: isLoading ? 0.7 : 1,
+              cursor: isLoading ? "not-allowed" : "pointer",
+            }}
+          >
+            {isLoading ? "Logging in..." : "Login"}
+          </button>
         </form>
 
         {/* OR Divider */}
@@ -67,6 +117,7 @@ const Login = () => {
         {/* Google Login */}
         <button
           onClick={handleGoogleLogin}
+          disabled={isLoading}
           style={{
             display: "flex",
             alignItems: "center",
@@ -76,10 +127,11 @@ const Login = () => {
             padding: "10px 20px",
             border: "none",
             borderRadius: "4px",
-            cursor: "pointer",
+            cursor: isLoading ? "not-allowed" : "pointer",
             fontWeight: "bold",
             marginBottom: "20px",
             width: "100%",
+            opacity: isLoading ? 0.7 : 1,
           }}
         >
           <img

@@ -11,13 +11,14 @@ import Home from "./pages/Home/Home";
 import socket from "./config/socket";
 import Notification from "./pages/Notification/Notification";
 import { useDispatch, useSelector } from "react-redux";
-import { addPost } from "./redux/slices/postsSlice";
+import { addPost, toggleLike } from "./redux/slices/postsSlice";
 import { addNotification } from "./redux/slices/notificationSlice";
 import { fetchCurrentUser } from "./redux/slices/authSlice";
 import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
-import { incrementUnread } from "./redux/slices/messageSlice";
+import { incrementUnread, fetchUnreadCount } from "./redux/slices/messageSlice";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 import ChatPage from "./pages/ChatPage/ChatPage";
+import store from "./redux/store";
 
 const storedUser = JSON.parse(localStorage.getItem("user"));
 const Register = lazy(() => import("./pages/Register/Register"));
@@ -35,6 +36,9 @@ function ChatWrapper() {
 
 function App() {
   const user = useSelector((state) => state.auth.user);
+  const currentChatUserId = useSelector(
+    (state) => state.messages.currentChatUserId
+  );
   const loading = useSelector((state) => state.auth.loading);
   const dispatch = useDispatch();
 
@@ -42,6 +46,10 @@ function App() {
     if (storedUser && !user) {
       dispatch(fetchCurrentUser());
     }
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(fetchUnreadCount());
   }, [dispatch]);
 
   useEffect(() => {
@@ -56,17 +64,36 @@ function App() {
       dispatch(addPost(post));
     });
 
+    socket.on("like-updated", ({ postId, likes }) => {
+      dispatch(toggleLike({ postId, likes }));
+    });
+
     socket.on("new-notification", (notification) => {
       dispatch(addNotification(notification));
+    });
 
-      socket.on("new-message", (message) => {
-        dispatch(incrementUnread());
-      });
+    socket.on("receiveMessage", (message) => {
+      console.log("In msg box", message.sender, currentChatUserId);
+
+      if (message.receiver === user._id) {
+        if (currentChatUserId.toString() !== message.sender.toString()) {
+          dispatch(incrementUnread());
+        }
+      }
+    });
+
+    socket.on("new-message", (message) => {});
+
+    socket.on("unreadCount", ({ count }) => {
+      dispatch(incrementUnread(count));
     });
 
     return () => {
       socket.off("new-post");
       socket.off("new-notification");
+      socket.off("like-updated");
+      socket.off("receiveMessage");
+      socket.off("unreadCount");
     };
   }, [user, dispatch]);
 
