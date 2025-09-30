@@ -57,8 +57,6 @@ router.get("/:userId", async (req, res) => {
       return timeB - timeA; // newest first
     });
 
-    console.log(convoData);
-
     res.json(convoData);
   } catch (err) {
     console.error("Error fetching conversations:", err);

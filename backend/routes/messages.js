@@ -26,7 +26,6 @@ router.get("/:userId/:receiverId", async (req, res) => {
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { senderId, receiverId, content } = req.body;
-    console.log(req.body);
 
     if (!receiverId || !content) {
       return res

@@ -17,7 +17,6 @@ const cloudinary = require("../config/cloudinary");
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GOOGLE_CALL_BACK_URL = process.env.GOOGLE_CALL_BACK_URL;
-console.log(GOOGLE_CALL_BACK_URL);
 
 router.use(passport.initialize());
 
@@ -77,8 +76,6 @@ router.get(
 router.get("/search", async (req, res) => {
   const { q } = req.query;
   const searchTerm = q.toLowerCase();
-
-  console.log("Searching User with query:", q);
 
   try {
     const users = await User.find({
@@ -153,13 +150,13 @@ router.post("/login", async (req, res) => {
     // check if user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: "Invalid email" });
+      return res.status(400).json({ message: "Invalid email" });
     }
 
     // compare hashed password
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) {
-      return res.status(401).json({ message: "Invalid password" });
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     // create JWT token
@@ -316,14 +313,9 @@ router.put("/:id/follow", authenticateToken, async (req, res) => {
     const targetUser = await User.findById(req.params.id);
     const currentUser = await User.findById(req.user._id);
 
-    console.log(targetUser, currentUser);
-
     if (!targetUser || !currentUser) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    console.log("Target User Followers:", targetUser.followers);
-    console.log("Current User Following:", currentUser.following);
 
     if (!targetUser.followers.includes(req.user._id)) {
       targetUser.followers.push(req.user._id);

@@ -17,7 +17,6 @@ const Login = () => {
   // Email/password login
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("prevent default hit", e);
 
     // Clear any previous errors
     setError("");
@@ -32,23 +31,20 @@ const Login = () => {
 
     try {
       const res = await api.post("/auth/login", formData);
-
-      if (res?.data?.token) {
+      if (res.data.token) {
         localStorage.setItem("token", res.data.token);
         dispatch(loginSuccess(res.data.user));
         navigate("/");
-      } else {
-        setError("Login failed. Please try again.");
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Invalid credentials");
+      setError("Invalid Credentials");
     }
   };
 
   const handleGoogleLogin = () => {
     const apiUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-    window.location.href = `${apiUrl}/api/auth/google`;
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (
@@ -76,7 +72,8 @@ const Login = () => {
         )}
 
         {/* Email/Password Login */}
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
+          {/* Email/Password Login */}
           <input
             type="email"
             placeholder="Email"
@@ -84,8 +81,6 @@ const Login = () => {
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            disabled={isLoading}
-            required
           />
           <input
             type="password"
@@ -94,19 +89,8 @@ const Login = () => {
             onChange={(e) =>
               setFormData({ ...formData, password: e.target.value })
             }
-            disabled={isLoading}
-            required
           />
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? "not-allowed" : "pointer",
-            }}
-          >
-            {isLoading ? "Logging in..." : "Login"}
-          </button>
+          <button type="submit">Login</button>
         </form>
 
         {/* OR Divider */}

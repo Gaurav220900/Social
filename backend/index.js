@@ -65,8 +65,6 @@ app.use("/api/notifications", require("./routes/notifications"));
 const onlineUsers = new Map(); // userId -> socket.id
 
 io.on("connection", (socket) => {
-  console.log("🔌 User connected:", socket.id);
-
   socket.on("joinRoom", (userId) => {
     socket.join(userId); // join their private room
     onlineUsers.set(userId, socket.id); // store mapping

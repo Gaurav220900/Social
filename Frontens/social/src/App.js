@@ -18,7 +18,6 @@ import OAuthCallback from "./pages/OAuthCallback/OAuthCallback";
 import { incrementUnread, fetchUnreadCount } from "./redux/slices/messageSlice";
 import LoadingSpinner from "./components/LoadingSpinner/LoadingSpinner";
 import ChatPage from "./pages/ChatPage/ChatPage";
-import store from "./redux/store";
 
 const storedUser = JSON.parse(localStorage.getItem("user"));
 const Register = lazy(() => import("./pages/Register/Register"));
@@ -49,7 +48,9 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(fetchUnreadCount());
+    if (user) {
+      dispatch(fetchUnreadCount());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -57,7 +58,6 @@ function App() {
 
     if (user?._id) {
       socket.emit("joinRoom", user._id);
-      console.log("📡 Joined room for user:", user._id);
     }
 
     socket.on("new-post", (post) => {
